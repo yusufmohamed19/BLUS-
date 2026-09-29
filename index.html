@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام المراجعة المستمرة</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --border: #334155;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+    }
+
+    /* Form Section */
+    .add-topic-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .add-topic-form input {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .add-topic-form input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Cards List */
+    .topics-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .topic-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .topic-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .topic-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .topic-counter {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .topic-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #2d3748;
+      color: var(--text);
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .review-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 4px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .review-select {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .delete-btn {
+      margin-right: auto;
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .delete-btn:hover {
+      opacity: 1;
+    }
+
+    /* Modal / Popup for Review */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .review-img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Upload Options Dialog */
+    .upload-dialog {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .upload-dialog.active {
+      display: flex;
+    }
+
+    .upload-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 25px;
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .upload-box button {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #2d3748;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .upload-box button:hover {
+      background: var(--accent);
+    }
+
+    /* Camera Modal */
+    .camera-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1002;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .camera-modal.active {
+      display: flex;
+    }
+
+    .camera-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 500px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 8px;
+      background: #000;
+    }
+
+    /* Hidden Inputs */
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>نظام المراجعة المستمرة ♾️</h1>
+      <p>أضف حقل تعلم جديد، ارفع صور تلخيصاتك، وراجعها بدورة لا نهائية</p>
+    </header>
+
+    <!-- إضافة حقل جديد -->
+    <div class="add-topic-form">
+      <input type="text" id="newTopicInput" placeholder="اسم الحقل (مثال: تعلم الإنجليزية، ميديا باير...)" />
+      <button class="btn" onclick="addNewTopic()">إضافة حقل</button>
+    </div>
+
+    <!-- قائمة الحقول -->
+    <div class="topics-grid" id="topicsContainer"></div>
+  </div>
+
+  <!-- خيارات رفع الصورة -->
+  <div class="upload-dialog" id="uploadDialog">
+    <div class="upload-box">
+      <h3>اختر طريقة الرفع</h3>
+      <button onclick="openLiveCamera()">📷 التقاط من الكاميرا</button>
+      <button onclick="triggerFileInput()">📁 اختيار من الجهاز</button>
+      <button onclick="closeUploadDialog()" style="background: transparent; border: none; color: var(--text-dim); margin-top: 5px;">إلغاء</button>
+    </div>
+  </div>
+
+  <!-- نافذة الكاميرا المباشرة (لتشغيل الكاميرا على الكمبيوتر والموبايل) -->
+  <div class="camera-modal" id="cameraModal">
+    <div class="camera-box">
+      <h3>التقاط صورة من الكاميرا</h3>
+      <video id="webcamVideo" autoplay playsinline></video>
+      <canvas id="cameraCanvas" style="display: none;"></canvas>
+      <div style="display: flex; gap: 10px; width: 100%;">
+        <button class="btn" style="flex: 1;" onclick="captureCameraImage()">التقاط الصورة 📸</button>
+        <button class="btn" style="background: var(--danger); flex: 1;" onclick="closeLiveCamera()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="deviceInput" accept="image/*" onchange="handleImageUpload(event)">
+
+  <!-- نافذة المراجعة -->
+  <div class="modal" id="reviewModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="reviewTitle">مراجعة</h3>
+        <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="reviewBody">
+        <!-- الصور هتنزل هنا -->
+      </div>
+      <div class="modal-footer">
+        <span id="reviewProgress" style="color: var(--text-dim); font-size: 0.9rem;"></span>
+        <button class="btn" onclick="nextBatch()">التالي (متابعة الدورة) ♾️️</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- IndexedDB Setup ---
+    let db;
+    const dbName = "ReviewSystemDB";
+
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 1);
+        request.onupgradeneeded = (e) => {
+          db = e.target.result;
+          if (!db.objectStoreNames.contains("topics")) {
+            db.createObjectStore("topics", { keyPath: "id", autoIncrement: true });
+          }
+          if (!db.objectStoreNames.contains("images")) {
+            const imgStore = db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
+            imgStore.createIndex("topicId", "topicId", { unique: false });
+          }
+        };
+        request.onsuccess = (e) => {
+          db = e.target.result;
+          resolve();
+        };
+        request.onerror = (e) => reject("خطأ في فتح قاعدة البيانات");
+      });
+    }
+
+    // --- Global State ---
+    let activeTopicIdForUpload = null;
+    let cameraStream = null;
+    let currentReviewState = {
+      topicId: null,
+      images: [],
+      currentIndex: 0,
+      batchSize: 5
+    };
+
+    // --- Topics Operations ---
+    async function addNewTopic() {
+      const input = document.getElementById("newTopicInput");
+      const title = input.value.trim();
+      if (!title) return;
+
+      const transaction = db.transaction(["topics"], "readwrite");
+      const store = transaction.objectStore("topics");
+      await store.add({ title: title, reviewIndex: 0 });
+
+      input.value = "";
+      renderTopics();
+    }
+
+    async function getTopics() {
+      return new Promise((resolve) => {
+        const transaction = db.transaction(["topics"], "readonly");
+        const store = transaction.objectStore("topics");
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result);
+      });
+    }
+
+    async function deleteTopic(id) {
+      if (!confirm("هل أنت تأكد من حذف هذا الحقل وكل الصور المرتبطة به؟")) return;
+      
+      const transaction = db.transaction(["topics", "images"], "readwrite");
+      transaction.objectStore("topics").delete(id);
+      
+      const imgStore = transaction.objectStore("images");
+      const index = imgStore.index("topicId");
+      const req = index.getAllKeys(id);
+      req.onsuccess = () => {
+        req.result.forEach(key => imgStore.delete(key));
+      };
+
+      transaction.oncomplete = () => renderTopics();
+    }
+
+    async function getImagesCount(topicId) {
+      return new Promise((resolve) => {
+        const transaction = db.transaction(["images"], "readonly");
+        const store = transaction.objectStore("images");
+        const index = store.index("topicId");
+        const request = index.count(topicId);
+        request.onsuccess = () => resolve(request.result);
+      });
+    }
+
+    // --- Render App ---
+    async function renderTopics() {
+      const container = document.getElementById("topicsContainer");
+      container.innerHTML = "";
+      const topics = await getTopics();
+
+      for (let topic of topics) {
+        const imgCount = await getImagesCount(topic.id);
+        const card = document.createElement("div");
+        card.className = "topic-card";
+        card.innerHTML = `
+          <div class="topic-header">
+            <span class="topic-title">${topic.title}</span>
+            <span class="topic-counter">${imgCount} صفحة/صورة</span>
+          </div>
+          <div class="topic-actions">
+            <button class="action-btn" title="إضافة صورة صفحة" onclick="openUploadDialog(${topic.id})">+</button>
+            
+            <div class="review-group">
+              <button class="action-btn" title="بدء المراجعة" onclick="startReview(${topic.id})">♾️</button>
+              <select class="review-select" id="batchSelect_${topic.id}">
+                <option value="5" selected>5 صفح</option>
+                <option value="10">10 صفح</option>
+                <option value="15">15 صفحة</option>
+                <option value="20">20 صفحة</option>
+              </select>
+            </div>
+
+            <button class="delete-btn" onclick="deleteTopic(${topic.id})">حذف الحقل</button>
+          </div>
+        `;
+        container.appendChild(card);
+      }
+    }
+
+    // --- Upload & Camera System ---
+    function openUploadDialog(topicId) {
+      activeTopicIdForUpload = topicId;
+      document.getElementById("uploadDialog").classList.add("active");
+    }
+
+    function closeUploadDialog() {
+      document.getElementById("uploadDialog").classList.remove("active");
+    }
+
+    function triggerFileInput() {
+      closeUploadDialog();
+      document.getElementById("deviceInput").click();
+    }
+
+    // فتح الكاميرا المباشرة
+    async function openLiveCamera() {
+      closeUploadDialog();
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false
+        });
+        const video = document.getElementById("webcamVideo");
+        video.srcObject = cameraStream;
+        document.getElementById("cameraModal").classList.add("active");
+      } catch (err) {
+        alert("تعذر فتح الكاميرا! يرجى التأكد من سماح المتصفح باستخدام الكاميرا.");
+      }
+    }
+
+    function closeLiveCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      document.getElementById("cameraModal").classList.remove("active");
+      activeTopicIdForUpload = null;
+    }
+
+    // التقاط صورة من الكاميرا وحفظها
+    function captureCameraImage() {
+      const video = document.getElementById("webcamVideo");
+      const canvas = document.getElementById("cameraCanvas");
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = canvas.toDataURL("image/png");
+      saveImageToDB(imageData);
+      closeLiveCamera();
+    }
+
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file || !activeTopicIdForUpload) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        saveImageToDB(e.target.result);
+        event.target.value = ""; // Reset input
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveImageToDB(imageData) {
+      if (!activeTopicIdForUpload) return;
+      const transaction = db.transaction(["images"], "readwrite");
+      const store = transaction.objectStore("images");
+      store.add({
+        topicId: activeTopicIdForUpload,
+        data: imageData,
+        createdAt: new Date().getTime()
+      });
+
+      transaction.oncomplete = () => {
+        renderTopics();
+        activeTopicIdForUpload = null;
+      };
+    }
+
+    // --- Loop Review System (الما لا نهاية) ---
+    async function startReview(topicId) {
+      const batchSize = parseInt(document.getElementById(`batchSelect_${topicId}`).value);
+      
+      const images = await new Promise((resolve) => {
+        const transaction = db.transaction(["images"], "readonly");
+        const store = transaction.objectStore("images");
+        const index = store.index("topicId");
+        const request = index.getAll(topicId);
+        request.onsuccess = () => resolve(request.result);
+      });
+
+      if (images.length === 0) {
+        alert("لا يوجد صور مضافة في هذا الحقل بعد! اضغط على زر (+) لرفع صفحات أولاً.");
+        return;
+      }
+
+      const topic = await new Promise((resolve) => {
+        const transaction = db.transaction(["topics"], "readonly");
+        const store = transaction.objectStore("topics");
+        const request = store.get(topicId);
+        request.onsuccess = () => resolve(request.result);
+      });
+
+      let startIndex = topic.reviewIndex || 0;
+      if (startIndex >= images.length) {
+        startIndex = 0;
+      }
+
+      currentReviewState = {
+        topicId: topicId,
+        topicTitle: topic.title,
+        images: images,
+        currentIndex: startIndex,
+        batchSize: batchSize
+      };
+
+      document.getElementById("reviewModal").classList.add("active");
+      renderReviewBatch();
+    }
+
+    function renderReviewBatch() {
+      const { images, currentIndex, batchSize, topicTitle } = currentReviewState;
+      const total = images.length;
+      const body = document.getElementById("reviewBody");
+      body.innerHTML = "";
+
+      document.getElementById("reviewTitle").innerText = `مراجعة: ${topicTitle}`;
+
+      let batch = [];
+      for (let i = 0; i < batchSize; i++) {
+        let index = (currentIndex + i) % total;
+        batch.push({ img: images[index], realIndex: index });
+      }
+
+      batch.forEach((item) => {
+        const imgEl = document.createElement("img");
+        imgEl.src = item.img.data;
+        imgEl.className = "review-img";
+        body.appendChild(imgEl);
+      });
+
+      const startDisplay = currentIndex + 1;
+      const endDisplay = Math.min(currentIndex + batchSize, total);
+      document.getElementById("reviewProgress").innerText = `عرض الصفحات من ${startDisplay} إلى ${endDisplay} (من إجمالي ${total})`;
+    }
+
+    async function nextBatch() {
+      const { topicId, images, currentIndex, batchSize } = currentReviewState;
+      const total = images.length;
+
+      let newIndex = (currentIndex + batchSize) % total;
+      currentReviewState.currentIndex = newIndex;
+
+      const transaction = db.transaction(["topics"], "readwrite");
+      const store = transaction.objectStore("topics");
+      const topic = await new Promise((res) => {
+        store.get(topicId).onsuccess = (e) => res(e.target.result);
+      });
+      topic.reviewIndex = newIndex;
+      store.put(topic);
+
+      document.getElementById("reviewBody").scrollTop = 0;
+      renderReviewBatch();
+    }
+
+    function closeReviewModal() {
+      document.getElementById("reviewModal").classList.remove("active");
+    }
+
+    // --- Init App ---
+    window.onload = async () => {
+      await initDB();
+      renderTopics();
+    };
+  </script>
+</body>
+</html>
