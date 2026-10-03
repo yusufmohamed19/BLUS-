@@ -1,35 +1,42 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>نظام المراجعة المستمرة</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام المراجعة المستمرة - سحابي</title>
   <style>
     :root {
-      --bg-color: #0b132b;
-      --card-bg: #1c2541;
-      --accent-blue: #3a86ff;
-      --text-main: #ffffff;
-      --text-muted: #a0aec0;
-      --danger-red: #ff0055;
-      --border-color: #2a385b;
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --border: #334155;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
 
     body {
       background-color: var(--bg-color);
-      color: var(--text-main);
+      color: var(--text);
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      padding: 40px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
     }
 
     header {
@@ -37,86 +44,75 @@
       margin-bottom: 30px;
     }
 
-    .logo {
-      font-size: 2.5rem;
-      color: #7209b7;
-      margin-bottom: 10px;
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--text);
+      margin-bottom: 8px;
     }
 
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 10px;
-    }
-
-    p.subtitle {
-      color: var(--text-muted);
+    header p {
+      color: var(--text-dim);
       font-size: 0.95rem;
-      margin-bottom: 15px;
     }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background-color: #1c3144;
-      color: var(--accent-blue);
-      padding: 6px 16px;
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
       border-radius: 20px;
-      font-size: 0.85rem;
-      border: 1px solid var(--accent-blue);
+      font-size: 0.8rem;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      margin-top: 8px;
     }
 
-    .input-section {
+    /* Form Section */
+    .add-topic-form {
       display: flex;
-      gap: 12px;
-      width: 100%;
-      max-width: 650px;
+      gap: 10px;
       margin-bottom: 30px;
     }
 
-    .input-section input {
+    .add-topic-form input {
       flex: 1;
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
       padding: 12px 16px;
       border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
       font-size: 1rem;
       outline: none;
-      text-align: right;
     }
 
-    .input-section input::placeholder {
-      color: #6c757d;
+    .add-topic-form input:focus {
+      border-color: var(--accent);
     }
 
-    .btn-add {
-      background-color: var(--accent-blue);
-      color: white;
-      border: none;
-      padding: 12px 24px;
+    .btn {
+      padding: 12px 20px;
       border-radius: 8px;
-      font-size: 1rem;
+      border: none;
+      background: var(--accent);
+      color: white;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.2s ease;
+      transition: background 0.2s;
     }
 
-    .btn-add:hover {
-      background-color: #2563eb;
+    .btn:hover {
+      background: var(--accent-hover);
     }
 
-    .fields-container {
+    /* Cards List */
+    .topics-grid {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      width: 100%;
-      max-width: 650px;
+      gap: 20px;
     }
 
-    .field-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
+    .topic-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 20px;
       display: flex;
@@ -124,207 +120,813 @@
       gap: 15px;
     }
 
-    .field-header {
+    .topic-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .field-title {
-      font-size: 1.25rem;
-      font-weight: bold;
+    .topic-title {
+      font-size: 1.3rem;
+      font-weight: 600;
     }
 
-    .field-meta {
+    .topic-counter {
       font-size: 0.85rem;
-      color: var(--text-muted);
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 10px;
+      border-radius: 20px;
     }
 
-    .field-controls {
+    .topic-actions {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
-    .btn-delete {
-      background: none;
-      border: none;
-      color: var(--danger-red);
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #2d3748;
+      color: var(--text);
+      font-size: 1.4rem;
       cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: bold;
+      transition: all 0.2s;
     }
 
-    .btn-delete:hover {
-      text-decoration: underline;
+    .action-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
     }
 
-    .right-controls {
+    .review-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 4px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
     }
 
-    select {
-      background-color: #0f172a;
-      color: var(--text-main);
-      border: 1px solid var(--border-color);
-      padding: 8px 12px;
+    .review-select {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
       border-radius: 6px;
       outline: none;
       cursor: pointer;
     }
 
-    .btn-icon {
-      background-color: #0f172a;
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      width: 36px;
-      height: 36px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
+    .delete-btn {
+      margin-right: auto;
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .delete-btn:hover {
+      opacity: 1;
+    }
+
+    /* Modal / Popup for Review */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
       justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.5rem;
       cursor: pointer;
     }
 
-    .empty-state {
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    /* كارت الصورة داخل المراجعة مع أزرار التحكم */
+    .review-img-card {
+      position: relative;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .review-img {
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .img-delete-btn {
+      margin-top: 10px;
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .img-delete-btn:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Upload Options Dialog */
+    .upload-dialog {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .upload-dialog.active {
+      display: flex;
+    }
+
+    .upload-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 25px;
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       text-align: center;
-      color: var(--text-muted);
-      margin-top: 20px;
+    }
+
+    .upload-box button {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #2d3748;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .upload-box button:hover {
+      background: var(--accent);
+    }
+
+    /* Camera Modal */
+    .camera-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1002;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .camera-modal.active {
+      display: flex;
+    }
+
+    .camera-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 500px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 8px;
+      background: #000;
+    }
+
+    /* Hidden Inputs */
+    input[type="file"] {
+      display: none;
     }
   </style>
+
+  <!-- Firebase SDK Modules -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot, query, where, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // ⚠️ استبدل البيانات التالية ببيانات مشروعك الخاصة من Firebase Console
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Global Variables & State
+    window.db = db;
+    window.firebaseMethods = { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot, query, where, getDoc };
+    
+    // Subscribe to realtime changes
+    onSnapshot(collection(db, "topics"), () => {
+      renderTopics();
+    });
+  </script>
 </head>
 <body>
 
-  <header>
-    <div class="logo">∞</div>
-    <h1>نظام المراجعة المستمرة</h1>
-    <p class="subtitle">أضف حقل تعلم جديد، ارفع صور تلخيصاتك، وراجعها بدورة لا نهائية</p>
-    <div class="badge">
-      <span>☁️</span>
-      <span>التخزين المحلي مفعل لعدم ضياع البيانات</span>
-    </div>
-  </header>
+  <div class="container">
+    <header>
+      <h1>نظام المراجعة المستمرة ♾️</h1>
+      <p>أضف حقل تعلم جديد، ارفع صور تلخيصاتك، وراجعها بدورة لا نهائية (مستند سحابي)</p>
+      <span class="status-badge">☁️ مفعّل المزامنة السحابية على جميع الأجهزة</span>
+    </header>
 
-  <div class="input-section">
-    <button class="btn-add" id="addBtn">إضافة حقل</button>
-    <input type="text" id="fieldNameInput" placeholder="اسم الحقل (مثال: تعلم الإنجليزية، ميديا باير...)" />
+    <!-- إضافة حقل جديد -->
+    <div class="add-topic-form">
+      <input type="text" id="newTopicInput" placeholder="اسم الحقل (مثال: تعلم الإنجليزية، ميديا باير...)" />
+      <button class="btn" onclick="addNewTopic()">إضافة حقل</button>
+    </div>
+
+    <!-- قائمة الحقول -->
+    <div class="topics-grid" id="topicsContainer"></div>
   </div>
 
-  <div class="fields-container" id="fieldsContainer">
-    <!-- الحقول تضاف هنا ديناميكياً -->
+  <!-- خيارات رفع الصورة -->
+  <div class="upload-dialog" id="uploadDialog">
+    <div class="upload-box">
+      <h3>اختر طريقة الرفع</h3>
+      <button onclick="openLiveCamera()">📷 التقاط من الكاميرا</button>
+      <button onclick="triggerFileInput()">📁 اختيار من الجهاز</button>
+      <button onclick="closeUploadDialog()" style="background: transparent; border: none; color: var(--text-dim); margin-top: 5px;">إلغاء</button>
+    </div>
+  </div>
+
+  <!-- نافذة الكاميرا المباشرة -->
+  <div class="camera-modal" id="cameraModal">
+    <div class="camera-box">
+      <h3>التقاط صورة من الكاميرا</h3>
+      <video id="webcamVideo" autoplay playsinline></video>
+      <canvas id="cameraCanvas" style="display: none;"></canvas>
+      <div style="display: flex; gap: 10px; width: 100%;">
+        <button class="btn" style="flex: 1;" onclick="captureCameraImage()">التقاط الصورة 📸</button>
+        <button class="btn" style="background: var(--danger); flex: 1;" onclick="closeLiveCamera()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="deviceInput" accept="image/*" onchange="handleImageUpload(event)">
+
+  <!-- نافذة المراجعة -->
+  <div class="modal" id="reviewModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="reviewTitle">مراجعة</h3>
+        <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="reviewBody">
+        <!-- الصور هتنزل هنا مع خيار الحذف -->
+      </div>
+      <div class="modal-footer">
+        <span id="reviewProgress" style="color: var(--text-dim); font-size: 0.9rem;"></span>
+        <button class="btn" onclick="nextBatch()">التالي (متابعة الدورة) ♾</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // مفتاح الحفظ في LocalStorage
-    const STORAGE_KEY = 'review_system_fields';
+    let activeTopicIdForUpload = null;
+    let cameraStream = null;
+    let currentReviewState = {
+      topicId: null,
+      images: [],
+      currentIndex: 0,
+      batchSize: 5,
+      topicTitle: ''
+    };
 
-    // استرجاع البيانات المخزنة عند التحميل الأول
-    let fields = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-
-    const fieldNameInput = document.getElementById('fieldNameInput');
-    const addBtn = document.getElementById('addBtn');
-    const fieldsContainer = document.getElementById('fieldsContainer');
-
-    // حفظ القائمة في LocalStorage
-    function saveToStorage() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(fields));
+    // --- Local Auto-Save Functions ---
+    function saveLocalData(topics, images) {
+      if (topics) localStorage.setItem("local_topics", JSON.stringify(topics));
+      if (images) localStorage.setItem("local_images", JSON.stringify(images));
     }
 
-    // إعادة رسم الحقول في الصفحة
-    function renderFields() {
-      fieldsContainer.innerHTML = '';
+    function getLocalTopics() {
+      return JSON.parse(localStorage.getItem("local_topics") || "[]");
+    }
 
-      if (fields.length === 0) {
-        fieldsContainer.innerHTML = '<div class="empty-state">لا توجد حقول حالياً. أضف حشولاً جديدة للبدء!</div>';
+    function getLocalImages() {
+      return JSON.parse(localStorage.getItem("local_images") || "[]");
+    }
+
+    // --- Firebase Topic Operations ---
+    async function addNewTopic() {
+      const input = document.getElementById("newTopicInput");
+      const title = input.value.trim();
+      if (!title) return;
+
+      const newTopic = {
+        id: "topic_" + Date.now(),
+        title: title,
+        reviewIndex: 0,
+        createdAt: new Date().getTime()
+      };
+
+      // Auto-save local
+      const localTopics = getLocalTopics();
+      localTopics.push(newTopic);
+      saveLocalData(localTopics, null);
+
+      try {
+        if (window.firebaseMethods && window.db) {
+          const { collection, addDoc } = window.firebaseMethods;
+          await addDoc(collection(window.db, "topics"), {
+            title: newTopic.title,
+            reviewIndex: newTopic.reviewIndex,
+            createdAt: newTopic.createdAt
+          });
+        }
+      } catch (e) {
+        console.log("Firebase sync fallback to local storage");
+      }
+
+      input.value = "";
+      renderTopics();
+    }
+
+    async function getTopics() {
+      try {
+        if (window.firebaseMethods && window.db) {
+          const { collection, getDocs } = window.firebaseMethods;
+          const snapshot = await getDocs(collection(window.db, "topics"));
+          let topics = [];
+          snapshot.forEach((doc) => {
+            topics.push({ id: doc.id, ...doc.data() });
+          });
+          if (topics.length > 0) {
+            saveLocalData(topics, null);
+            return topics;
+          }
+        }
+      } catch (e) {
+        console.log("Using local topics backup");
+      }
+      return getLocalTopics();
+    }
+
+    async function deleteTopic(id) {
+      if (!confirm("هل أنت تأكد من حذف هذا الحقل وكل الصور المرتبطة به؟")) return;
+
+      // Local deletion auto-save
+      let localTopics = getLocalTopics().filter(t => t.id !== id);
+      let localImages = getLocalImages().filter(img => img.topicId !== id);
+      saveLocalData(localTopics, localImages);
+
+      try {
+        if (window.firebaseMethods && window.db) {
+          const { doc, deleteDoc, collection, query, where, getDocs } = window.firebaseMethods;
+          await deleteDoc(doc(window.db, "topics", id));
+          const q = query(collection(window.db, "images"), where("topicId", "==", id));
+          const snapshot = await getDocs(q);
+          snapshot.forEach(async (imgDoc) => {
+            await deleteDoc(doc(window.db, "images", imgDoc.id));
+          });
+        }
+      } catch (e) {
+        console.log("Firebase delete error, local updated");
+      }
+
+      renderTopics();
+    }
+
+    async function getImagesCount(topicId) {
+      try {
+        if (window.firebaseMethods && window.db) {
+          const { collection, query, where, getDocs } = window.firebaseMethods;
+          const q = query(collection(window.db, "images"), where("topicId", "==", topicId));
+          const snapshot = await getDocs(q);
+          if (!snapshot.empty) return snapshot.size;
+        }
+      } catch (e) {}
+      const localImages = getLocalImages();
+      return localImages.filter(img => img.topicId === topicId).length;
+    }
+
+    // --- Render Topics ---
+    async function renderTopics() {
+      const container = document.getElementById("topicsContainer");
+      if (!container) return;
+      container.innerHTML = "";
+      
+      const topics = await getTopics();
+
+      for (let topic of topics) {
+        const imgCount = await getImagesCount(topic.id);
+        const card = document.createElement("div");
+        card.className = "topic-card";
+        card.innerHTML = `
+          <div class="topic-header">
+            <span class="topic-title">${topic.title}</span>
+            <span class="topic-counter">${imgCount} صفحة/صورة</span>
+          </div>
+          <div class="topic-actions">
+            <button class="action-btn" title="إضافة صورة صفحة" onclick="openUploadDialog('${topic.id}')">+</button>
+            
+            <div class="review-group">
+              <button class="action-btn" title="بدء المراجعة" onclick="startReview('${topic.id}')">♾️</button>
+              <select class="review-select" id="batchSelect_${topic.id}">
+                <option value="5" selected>5 صفح</option>
+                <option value="10">10 صفح</option>
+                <option value="15">15 صفحة</option>
+                <option value="20">20 صفحة</option>
+              </select>
+            </div>
+
+            <button class="delete-btn" onclick="deleteTopic('${topic.id}')">حذف الحقل</button>
+          </div>
+        `;
+        container.appendChild(card);
+      }
+    }
+
+    // --- Upload Options ---
+    function openUploadDialog(topicId) {
+      activeTopicIdForUpload = topicId;
+      document.getElementById("uploadDialog").classList.add("active");
+    }
+
+    function closeUploadDialog() {
+      document.getElementById("uploadDialog").classList.remove("active");
+    }
+
+    function triggerFileInput() {
+      closeUploadDialog();
+      document.getElementById("deviceInput").click();
+    }
+
+    async function openLiveCamera() {
+      closeUploadDialog();
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false
+        });
+        const video = document.getElementById("webcamVideo");
+        video.srcObject = cameraStream;
+        document.getElementById("cameraModal").classList.add("active");
+      } catch (err) {
+        alert("تعذر فتح الكاميرا! يرجى التأكد من سماح المتصفح باستخدام الكاميرا.");
+      }
+    }
+
+    function closeLiveCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      document.getElementById("cameraModal").classList.remove("active");
+      activeTopicIdForUpload = null;
+    }
+
+    function captureCameraImage() {
+      const video = document.getElementById("webcamVideo");
+      const canvas = document.getElementById("cameraCanvas");
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // الضغط لتقليل الحجم للحفظ في السحابة
+      const imageData = canvas.toDataURL("image/jpeg", 0.6);
+      saveImageToDB(imageData);
+      closeLiveCamera();
+    }
+
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file || !activeTopicIdForUpload) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        // ضغط الصورة قبل حفظها
+        compressImage(e.target.result, 1000, 0.6, (compressedData) => {
+          saveImageToDB(compressedData);
+        });
+        event.target.value = "";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // دالة ضغط الصور لضمان سلاسة الحفظ السحابي
+    function compressImage(src, maxWidth, quality, callback) {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        callback(canvas.toDataURL('image/jpeg', quality));
+      };
+    }
+
+    async function saveImageToDB(imageData) {
+      if (!activeTopicIdForUpload) return;
+
+      const newImg = {
+        id: "img_" + Date.now(),
+        topicId: activeTopicIdForUpload,
+        data: imageData,
+        createdAt: new Date().getTime()
+      };
+
+      // Local save auto
+      const localImages = getLocalImages();
+      localImages.push(newImg);
+      saveLocalData(null, localImages);
+
+      try {
+        if (window.firebaseMethods && window.db) {
+          const { collection, addDoc } = window.firebaseMethods;
+          await addDoc(collection(window.db, "images"), {
+            topicId: newImg.topicId,
+            data: newImg.data,
+            createdAt: newImg.createdAt
+          });
+        }
+      } catch (e) {
+        console.log("Saved image locally");
+      }
+
+      renderTopics();
+      activeTopicIdForUpload = null;
+    }
+
+    // --- Review System & Image Deletion ---
+    async function startReview(topicId) {
+      const batchSelect = document.getElementById(`batchSelect_${topicId}`);
+      const batchSize = parseInt(batchSelect ? batchSelect.value : 5);
+      
+      let images = [];
+      try {
+        if (window.firebaseMethods && window.db) {
+          const { collection, query, where, getDocs } = window.firebaseMethods;
+          const q = query(collection(window.db, "images"), where("topicId", "==", topicId));
+          const snapshot = await getDocs(q);
+          snapshot.forEach((doc) => {
+            images.push({ id: doc.id, ...doc.data() });
+          });
+        }
+      } catch (e) {}
+
+      if (images.length === 0) {
+        images = getLocalImages().filter(img => img.topicId === topicId);
+      }
+
+      if (images.length === 0) {
+        alert("لا يوجد صور مضافة في هذا الحقل بعد! اضغط على زر (+) لرفع صفحات أولاً.");
         return;
       }
 
-      fields.forEach((field) => {
-        const card = document.createElement('div');
-        card.className = 'field-card';
+      let topic = getLocalTopics().find(t => t.id === topicId) || { title: "مراجعة", reviewIndex: 0 };
+      try {
+        if (window.firebaseMethods && window.db) {
+          const { doc, getDoc } = window.firebaseMethods;
+          const topicSnap = await getDoc(doc(window.db, "topics", topicId));
+          if (topicSnap.exists()) topic = topicSnap.data();
+        }
+      } catch (e) {}
 
-        card.innerHTML = `
-          <div class="field-header">
-            <span class="field-meta">${field.count || 0} صفحة/صورة</span>
-            <span class="field-title">${escapeHtml(field.name)}</span>
-          </div>
-          <div class="field-controls">
-            <button class="btn-delete" onclick="deleteField('${field.id}')">حذف الحقل</button>
-            <div class="right-controls">
-              <select onchange="updatePages('${field.id}', this.value)">
-                <option value="5" ${field.pages === '5' ? 'selected' : ''}>5 صفح</option>
-                <option value="10" ${field.pages === '10' ? 'selected' : ''}>10 صفح</option>
-                <option value="15" ${field.pages === '15' ? 'selected' : ''}>15 صفحة</option>
-              </select>
-              <button class="btn-icon">∞</button>
-              <button class="btn-icon">+</button>
-            </div>
-          </div>
-        `;
+      let startIndex = topic.reviewIndex || 0;
+      if (startIndex >= images.length) {
+        startIndex = 0;
+      }
 
-        fieldsContainer.appendChild(card);
-      });
-    }
-
-    // إضافة حقل جديد
-    function addField() {
-      const name = fieldNameInput.value.trim();
-      if (!name) return;
-
-      const newField = {
-        id: Date.now().toString(),
-        name: name,
-        count: 0,
-        pages: '5'
+      currentReviewState = {
+        topicId: topicId,
+        topicTitle: topic.title,
+        images: images,
+        currentIndex: startIndex,
+        batchSize: batchSize
       };
 
-      fields.unshift(newField); // إدراج في البداية
-      saveToStorage();
-      renderFields();
-
-      fieldNameInput.value = '';
+      document.getElementById("reviewModal").classList.add("active");
+      renderReviewBatch();
     }
 
-    // حذف حقل
-    window.deleteField = function(id) {
-      fields = fields.filter(f => f.id !== id);
-      saveToStorage();
-      renderFields();
-    };
+    function renderReviewBatch() {
+      const { images, currentIndex, batchSize, topicTitle } = currentReviewState;
+      const total = images.length;
+      const body = document.getElementById("reviewBody");
+      body.innerHTML = "";
 
-    // تحديث عدد الصفحات
-    window.updatePages = function(id, value) {
-      const field = fields.find(f => f.id === id);
-      if (field) {
-        field.pages = value;
-        saveToStorage();
+      document.getElementById("reviewTitle").innerText = `مراجعة: ${topicTitle}`;
+
+      if (total === 0) {
+        body.innerHTML = "<p style='color: var(--text-dim); margin: 20px;'>تم حذف جميع الصور من هذا الحقل.</p>";
+        document.getElementById("reviewProgress").innerText = "0 / 0";
+        return;
       }
-    };
 
-    // حماية الحروف الخاصة منعاً للمشاكل الأمنية
-    function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, function(m) {
-        return {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#039;'
-        }[m];
+      let batch = [];
+      for (let i = 0; i < Math.min(batchSize, total); i++) {
+        let index = (currentIndex + i) % total;
+        batch.push({ img: images[index], realIndex: index });
+      }
+
+      batch.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "review-img-card";
+
+        const imgEl = document.createElement("img");
+        imgEl.src = item.img.data;
+        imgEl.className = "review-img";
+
+        // زر حذف الصورة أثناء المراجعة
+        const delBtn = document.createElement("button");
+        delBtn.className = "img-delete-btn";
+        delBtn.innerHTML = "🗑️ حذف هذه الصورة نهائياً";
+        delBtn.onclick = () => deleteSingleImage(item.img.id);
+
+        card.appendChild(imgEl);
+        card.appendChild(delBtn);
+        body.appendChild(card);
       });
+
+      const startDisplay = currentIndex + 1;
+      const endDisplay = Math.min(currentIndex + batchSize, total);
+      document.getElementById("reviewProgress").innerText = `عرض الصفحات من ${startDisplay} إلى ${endDisplay} (من إجمالي ${total})`;
     }
 
-    // الأحداث
-    addBtn.addEventListener('click', addField);
-    fieldNameInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') addField();
-    });
+    // حذف صورة واحدة من المراجعة وقاعدة البيانات
+    async function deleteSingleImage(imageId) {
+      if (!confirm("هل أنت تأكد من حذف هذه الصورة نهائياً؟ لن تظهر في المراجعات القادمة.")) return;
 
-    // العرض الأولي عند فتح الصفحة
-    renderFields();
+      // Auto save deletion local
+      let localImages = getLocalImages().filter(img => img.id !== imageId);
+      saveLocalData(null, localImages);
+
+      try {
+        if (window.firebaseMethods && window.db) {
+          const { doc, deleteDoc } = window.firebaseMethods;
+          await deleteDoc(doc(window.db, "images", imageId));
+        }
+      } catch (e) {}
+
+      // تحديث القائمة الحالية في الذاكرة لتحديث المراجعة فورا
+      currentReviewState.images = currentReviewState.images.filter(img => img.id !== imageId);
+      
+      // إرجاع مؤشر المراجعة إذا أصبح خارج الحدود
+      if (currentReviewState.currentIndex >= currentReviewState.images.length) {
+        currentReviewState.currentIndex = 0;
+      }
+
+      renderReviewBatch();
+      renderTopics();
+    }
+
+    async function nextBatch() {
+      const { topicId, images, currentIndex, batchSize } = currentReviewState;
+      const total = images.length;
+      if (total === 0) return;
+
+      let newIndex = (currentIndex + batchSize) % total;
+      currentReviewState.currentIndex = newIndex;
+
+      // Auto save local index
+      let localTopics = getLocalTopics();
+      let t = localTopics.find(item => item.id === topicId);
+      if (t) {
+        t.reviewIndex = newIndex;
+        saveLocalData(localTopics, null);
+      }
+
+      try {
+        if (window.firebaseMethods && window.db) {
+          const { doc, updateDoc } = window.firebaseMethods;
+          await updateDoc(doc(window.db, "topics", topicId), {
+            reviewIndex: newIndex
+          });
+        }
+      } catch (e) {}
+
+      document.getElementById("reviewBody").scrollTop = 0;
+      renderReviewBatch();
+    }
+
+    function closeReviewModal() {
+      document.getElementById("reviewModal").classList.remove("active");
+    }
+
+    window.onload = () => {
+      // إيقاف الانتظار الابتدائي حتى يتم تحميل Firebase
+      setTimeout(() => {
+        renderTopics();
+      }, 1200);
+    };
   </script>
-
 </body>
 </html>
