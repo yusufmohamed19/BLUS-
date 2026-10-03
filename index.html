@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام المراجعة المستمرة - سحابي</title>
+  <title>نظام المراجعة المستمرة - سحابي ومحلي</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -15,13 +15,14 @@
       --border: #334155;
       --danger: #ef4444;
       --danger-hover: #dc2626;
+      --success: #10b981;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     body {
@@ -66,7 +67,6 @@
       margin-top: 8px;
     }
 
-    /* Form Section */
     .add-topic-form {
       display: flex;
       gap: 10px;
@@ -103,7 +103,6 @@
       background: var(--accent-hover);
     }
 
-    /* Cards List */
     .topics-grid {
       display: flex;
       flex-direction: column;
@@ -200,7 +199,7 @@
       opacity: 1;
     }
 
-    /* Modal / Popup for Review */
+    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -257,7 +256,6 @@
       align-items: center;
     }
 
-    /* كارت الصورة داخل المراجعة مع أزرار التحكم */
     .review-img-card {
       position: relative;
       width: 100%;
@@ -304,25 +302,24 @@
       align-items: center;
     }
 
-    /* Upload Options Dialog */
-    .upload-dialog {
+    .upload-dialog, .camera-modal {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.8);
       z-index: 1001;
       justify-content: center;
       align-items: center;
     }
 
-    .upload-dialog.active {
+    .upload-dialog.active, .camera-modal.active {
       display: flex;
     }
 
-    .upload-box {
+    .upload-box, .camera-box {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -352,46 +349,12 @@
       background: var(--accent);
     }
 
-    /* Camera Modal */
-    .camera-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      z-index: 1002;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      padding: 20px;
-    }
-
-    .camera-modal.active {
-      display: flex;
-    }
-
-    .camera-box {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 500px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-    }
-
     video {
       width: 100%;
       border-radius: 8px;
       background: #000;
     }
 
-    /* Hidden Inputs */
     input[type="file"] {
       display: none;
     }
@@ -400,8 +363,9 @@
   <!-- Firebase SDK Modules -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot, query, where, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, setDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+    // ⚠️ استبدل هذه البيانات بمعلومات مشروعك في Firebase لتشغيل المزامنة السحابية الحقيقية
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -411,15 +375,19 @@
       appId: "YOUR_APP_ID"
     };
 
-    try {
-      if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      try {
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         window.db = db;
-        window.firebaseMethods = { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot, query, where, getDoc };
+        window.firebaseMethods = { collection, setDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot, query, where };
+        window.isFirebaseActive = true;
+      } catch(e) {
+        console.warn("خطأ في الاتصال بـ Firebase، جاري العمل في الوضع المحلي فقط", e);
+        window.isFirebaseActive = false;
       }
-    } catch(e) {
-      console.log("Firebase not configured, running in local mode");
+    } else {
+      window.isFirebaseActive = false;
     }
   </script>
 </head>
@@ -428,21 +396,18 @@
   <div class="container">
     <header>
       <h1>نظام المراجعة المستمرة ♾️</h1>
-      <p>أضف حقل تعلم جديد، ارفع صور تلخيصاتك، وراجعها بدورة لا نهائية (مستند سحابي)</p>
-      <span class="status-badge">☁️ مفعّل المزامنة على كافة الأجهزة</span>
+      <p>أضف حقل تعلم جديد، ارفع صور تلخيصاتك، وراجعها بدورة لا نهائية</p>
+      <span class="status-badge" id="syncStatus">💾 حفظ محلي متزامن</span>
     </header>
 
-    <!-- إضافة حقل جديد -->
     <div class="add-topic-form">
       <input type="text" id="newTopicInput" placeholder="اسم الحقل (مثال: تعلم الإنجليزية، ميديا باير...)" />
       <button class="btn" onclick="addNewTopic()">إضافة حقل</button>
     </div>
 
-    <!-- قائمة الحقول -->
     <div class="topics-grid" id="topicsContainer"></div>
   </div>
 
-  <!-- خيارات رفع الصورة -->
   <div class="upload-dialog" id="uploadDialog">
     <div class="upload-box">
       <h3>اختر طريقة الرفع</h3>
@@ -452,13 +417,12 @@
     </div>
   </div>
 
-  <!-- نافذة الكاميرا المباشرة -->
   <div class="camera-modal" id="cameraModal">
-    <div class="camera-box">
+    <div class="camera-box" style="max-width: 500px; width: 100%;">
       <h3>التقاط صورة من الكاميرا</h3>
       <video id="webcamVideo" autoplay playsinline></video>
       <canvas id="cameraCanvas" style="display: none;"></canvas>
-      <div style="display: flex; gap: 10px; width: 100%;">
+      <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
         <button class="btn" style="flex: 1;" onclick="captureCameraImage()">التقاط الصورة 📸</button>
         <button class="btn" style="background: var(--danger); flex: 1;" onclick="closeLiveCamera()">إلغاء</button>
       </div>
@@ -467,15 +431,13 @@
 
   <input type="file" id="deviceInput" accept="image/*" onchange="handleImageUpload(event)">
 
-  <!-- نافذة المراجعة -->
   <div class="modal" id="reviewModal">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="reviewTitle">مراجعة</h3>
         <button class="modal-close" onclick="closeReviewModal()">&times;</button>
       </div>
-      <div class="modal-body" id="reviewBody">
-      </div>
+      <div class="modal-body" id="reviewBody"></div>
       <div class="modal-footer">
         <span id="reviewProgress" style="color: var(--text-dim); font-size: 0.9rem;"></span>
         <button class="btn" onclick="nextBatch()">التالي (متابعة الدورة) ♾</button>
@@ -494,15 +456,21 @@
       topicTitle: ''
     };
 
-    // --- Local Auto-Save Functions ---
+    // --- إدارة التخزين المحلي والآمن ---
     function getLocalTopics() {
-      const data = localStorage.getItem("local_topics");
-      return data ? JSON.parse(data) : [];
+      try {
+        return JSON.parse(localStorage.getItem("local_topics") || "[]");
+      } catch (e) {
+        return [];
+      }
     }
 
     function getLocalImages() {
-      const data = localStorage.getItem("local_images");
-      return data ? JSON.parse(data) : [];
+      try {
+        return JSON.parse(localStorage.getItem("local_images") || "[]");
+      } catch (e) {
+        return [];
+      }
     }
 
     function saveLocalTopics(topics) {
@@ -513,73 +481,51 @@
       localStorage.setItem("local_images", JSON.stringify(images));
     }
 
-    // --- Topic Operations ---
+    // --- العمليات على الحقول ---
     async function addNewTopic() {
       const input = document.getElementById("newTopicInput");
       const title = input.value.trim();
       if (!title) return;
 
+      const topicId = "topic_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
       const newTopic = {
-        id: "topic_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+        id: topicId,
         title: title,
         reviewIndex: 0,
         createdAt: new Date().getTime()
       };
 
-      // 1. القراءة الصحيحة لجميع الحقول الحالية أولاً لضمان عدم ضياع أي حقل سابق
-      const currentTopics = getLocalTopics();
-      currentTopics.push(newTopic);
-      saveLocalTopics(currentTopics);
+      // 1. الحفظ المحلي المباشر لضمان عدم الضياع
+      const topics = getLocalTopics();
+      topics.push(newTopic);
+      saveLocalTopics(topics);
 
-      // 2. محاولة الحفظ السحابي في حال تفعيل Firebase
-      try {
-        if (window.firebaseMethods && window.db) {
-          const { collection, addDoc } = window.firebaseMethods;
-          const docRef = await addDoc(collection(window.db, "topics"), {
-            title: newTopic.title,
-            reviewIndex: newTopic.reviewIndex,
-            createdAt: newTopic.createdAt
-          });
-          newTopic.id = docRef.id;
-          saveLocalTopics(currentTopics);
+      // 2. الحفظ السحابي بـ ID موحّد
+      if (window.isFirebaseActive && window.db) {
+        try {
+          const { doc, setDoc } = window.firebaseMethods;
+          await setDoc(doc(window.db, "topics", topicId), newTopic);
+        } catch (e) {
+          console.error("تعذر الحفظ السحابي، تم الاكتفاء بالحفظ المحلي:", e);
         }
-      } catch (e) {
-        console.log("تم الحفظ محلياً بكتفاء");
       }
 
       input.value = "";
       renderTopics();
     }
 
-    async function getTopics() {
-      let topics = getLocalTopics();
-      try {
-        if (window.firebaseMethods && window.db) {
-          const { collection, getDocs } = window.firebaseMethods;
-          const snapshot = await getDocs(collection(window.db, "topics"));
-          let remoteTopics = [];
-          snapshot.forEach((doc) => {
-            remoteTopics.push({ id: doc.id, ...doc.data() });
-          });
-          if (remoteTopics.length > 0) {
-            topics = remoteTopics;
-            saveLocalTopics(topics);
-          }
-        }
-      } catch (e) {}
-      return topics;
-    }
-
     async function deleteTopic(id) {
-      if (!confirm("هل أنت تأكد من حذف هذا الحقل وكل الصور المرتبطة به؟")) return;
+      if (!confirm("هل أنت متأكد من حذف هذا الحقل وكل الصور المرتبطة به؟")) return;
 
-      let localTopics = getLocalTopics().filter(t => String(t.id) !== String(id));
-      let localImages = getLocalImages().filter(img => String(img.topicId) !== String(id));
+      // حذف محلي
+      const localTopics = getLocalTopics().filter(t => String(t.id) !== String(id));
+      const localImages = getLocalImages().filter(img => String(img.topicId) !== String(id));
       saveLocalTopics(localTopics);
       saveLocalImages(localImages);
 
-      try {
-        if (window.firebaseMethods && window.db) {
+      // حذف سحابي
+      if (window.isFirebaseActive && window.db) {
+        try {
           const { doc, deleteDoc, collection, query, where, getDocs } = window.firebaseMethods;
           await deleteDoc(doc(window.db, "topics", id));
           const q = query(collection(window.db, "images"), where("topicId", "==", id));
@@ -587,36 +533,34 @@
           snapshot.forEach(async (imgDoc) => {
             await deleteDoc(doc(window.db, "images", imgDoc.id));
           });
+        } catch (e) {
+          console.error("خطأ أثناء الحذف السحابي:", e);
         }
-      } catch (e) {}
+      }
 
       renderTopics();
     }
 
-    async function getImagesCount(topicId) {
+    function getImagesCount(topicId) {
       const localImages = getLocalImages();
-      let count = localImages.filter(img => String(img.topicId) === String(topicId)).length;
-      try {
-        if (window.firebaseMethods && window.db) {
-          const { collection, query, where, getDocs } = window.firebaseMethods;
-          const q = query(collection(window.db, "images"), where("topicId", "==", topicId));
-          const snapshot = await getDocs(q);
-          if (!snapshot.empty) count = snapshot.size;
-        }
-      } catch (e) {}
-      return count;
+      return localImages.filter(img => String(img.topicId) === String(topicId)).length;
     }
 
-    // --- Render Topics ---
-    async function renderTopics() {
+    // --- العرض والواجهة ---
+    function renderTopics() {
       const container = document.getElementById("topicsContainer");
       if (!container) return;
       container.innerHTML = "";
       
-      const topics = await getTopics();
+      const topics = getLocalTopics();
 
-      for (let topic of topics) {
-        const imgCount = await getImagesCount(topic.id);
+      if (topics.length === 0) {
+        container.innerHTML = `<p style="text-align: center; color: var(--text-dim); padding: 20px;">لا توجد حقول قائمة حتى الآن. أضف حقل تعلم جديد للبدء!</p>`;
+        return;
+      }
+
+      topics.forEach(topic => {
+        const imgCount = getImagesCount(topic.id);
         const card = document.createElement("div");
         card.className = "topic-card";
         card.innerHTML = `
@@ -641,10 +585,10 @@
           </div>
         `;
         container.appendChild(card);
-      }
+      });
     }
 
-    // --- Upload Options ---
+    // --- رفع الصور والتقاطها ---
     function openUploadDialog(topicId) {
       activeTopicIdForUpload = topicId;
       document.getElementById("uploadDialog").classList.add("active");
@@ -735,57 +679,46 @@
     async function saveImageToDB(imageData) {
       if (!activeTopicIdForUpload) return;
 
+      const imageId = "img_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
       const newImg = {
-        id: "img_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+        id: imageId,
         topicId: activeTopicIdForUpload,
         data: imageData,
         createdAt: new Date().getTime()
       };
 
+      // 1. حفظ محلي
       const localImages = getLocalImages();
       localImages.push(newImg);
       saveLocalImages(localImages);
 
-      try {
-        if (window.firebaseMethods && window.db) {
-          const { collection, addDoc } = window.firebaseMethods;
-          await addDoc(collection(window.db, "images"), {
-            topicId: newImg.topicId,
-            data: newImg.data,
-            createdAt: newImg.createdAt
-          });
+      // 2. حفظ سحابي
+      if (window.isFirebaseActive && window.db) {
+        try {
+          const { doc, setDoc } = window.firebaseMethods;
+          await setDoc(doc(window.db, "images", imageId), newImg);
+        } catch (e) {
+          console.error("خطأ أثناء رفع الصورة سحابياً:", e);
         }
-      } catch (e) {}
+      }
 
       renderTopics();
       activeTopicIdForUpload = null;
     }
 
-    // --- Review System ---
-    async function startReview(topicId) {
+    // --- نظام المراجعة الدورية المستمرة ---
+    function startReview(topicId) {
       const batchSelect = document.getElementById(`batchSelect_${topicId}`);
       const batchSize = parseInt(batchSelect ? batchSelect.value : 5);
       
-      let images = getLocalImages().filter(img => String(img.topicId) === String(topicId));
-      try {
-        if (window.firebaseMethods && window.db) {
-          const { collection, query, where, getDocs } = window.firebaseMethods;
-          const q = query(collection(window.db, "images"), where("topicId", "==", topicId));
-          const snapshot = await getDocs(q);
-          let remoteImages = [];
-          snapshot.forEach((doc) => {
-            remoteImages.push({ id: doc.id, ...doc.data() });
-          });
-          if (remoteImages.length > 0) images = remoteImages;
-        }
-      } catch (e) {}
+      const images = getLocalImages().filter(img => String(img.topicId) === String(topicId));
 
       if (images.length === 0) {
-        alert("لا يوجد صور مضافة في هذا الحقل بعد! اضغط على زر (+) لرفع صفحات أولاً.");
+        alert("لا توجد صور مضافة في هذا الحقل بعد! اضغط على زر (+) لرفع صفحات أولاً.");
         return;
       }
 
-      let topic = getLocalTopics().find(t => String(t.id) === String(topicId)) || { title: "مراجعة", reviewIndex: 0 };
+      const topic = getLocalTopics().find(t => String(t.id) === String(topicId)) || { title: "مراجعة", reviewIndex: 0 };
 
       let startIndex = topic.reviewIndex || 0;
       if (startIndex >= images.length) {
@@ -848,17 +781,19 @@
     }
 
     async function deleteSingleImage(imageId) {
-      if (!confirm("هل أنت تأكد من حذف هذه الصورة نهائياً؟")) return;
+      if (!confirm("هل أنت متأكد من حذف هذه الصورة نهائياً؟")) return;
 
+      // حذف محلي
       let localImages = getLocalImages().filter(img => String(img.id) !== String(imageId));
       saveLocalImages(localImages);
 
-      try {
-        if (window.firebaseMethods && window.db) {
+      // حذف سحابي
+      if (window.isFirebaseActive && window.db) {
+        try {
           const { doc, deleteDoc } = window.firebaseMethods;
           await deleteDoc(doc(window.db, "images", imageId));
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }
 
       currentReviewState.images = currentReviewState.images.filter(img => String(img.id) !== String(imageId));
       
@@ -878,6 +813,7 @@
       let newIndex = (currentIndex + batchSize) % total;
       currentReviewState.currentIndex = newIndex;
 
+      // تحديث المؤشر محلياً
       let localTopics = getLocalTopics();
       let t = localTopics.find(item => String(item.id) === String(topicId));
       if (t) {
@@ -885,14 +821,15 @@
         saveLocalTopics(localTopics);
       }
 
-      try {
-        if (window.firebaseMethods && window.db) {
+      // تحديث المؤشر سحابياً
+      if (window.isFirebaseActive && window.db) {
+        try {
           const { doc, updateDoc } = window.firebaseMethods;
           await updateDoc(doc(window.db, "topics", topicId), {
             reviewIndex: newIndex
           });
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }
 
       document.getElementById("reviewBody").scrollTop = 0;
       renderReviewBatch();
@@ -902,8 +839,41 @@
       document.getElementById("reviewModal").classList.remove("active");
     }
 
+    // --- مزامنة Firebase الحية التلقائية ---
+    function initFirebaseSync() {
+      if (!window.isFirebaseActive || !window.db) return;
+
+      const badge = document.getElementById("syncStatus");
+      badge.innerText = "☁️ مزامنة سحابية حية مفعّلة";
+      badge.style.borderColor = "var(--success)";
+      badge.style.color = "var(--success)";
+
+      const { collection, onSnapshot } = window.firebaseMethods;
+
+      // استماع حقيقي للتغيرات في الحقول
+      onSnapshot(collection(window.db, "topics"), (snapshot) => {
+        let remoteTopics = [];
+        snapshot.forEach(doc => remoteTopics.push(doc.data()));
+        if (remoteTopics.length > 0) {
+          saveLocalTopics(remoteTopics);
+          renderTopics();
+        }
+      });
+
+      // استماع حقيقي للتغيرات في الصور
+      onSnapshot(collection(window.db, "images"), (snapshot) => {
+        let remoteImages = [];
+        snapshot.forEach(doc => remoteImages.push(doc.data()));
+        if (remoteImages.length > 0) {
+          saveLocalImages(remoteImages);
+          renderTopics();
+        }
+      });
+    }
+
     window.onload = () => {
       renderTopics();
+      setTimeout(initFirebaseSync, 1000);
     };
   </script>
 </body>
